@@ -3,37 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>绝对对齐-矩阵分区洗牌系统</title>
+    <title>绝对对齐-高能视频洗牌系统（带进度条版）</title>
     <style>
-        body { font-family: sans-serif; background-color: #0f172a; color: #e2e8f0; padding: 20px; max-width: 800px; margin: 0 auto; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
         h1 { text-align: center; color: #38bdf8; font-size: 24px; }
-        .card { background: #1e293b; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-top: 20px; }
-        .video-box { width: 100%; aspect-ratio: 16 / 9; background: #020617; border: 2px dashed #475569; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 20px; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-        .btn-group { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .btn { background: #0284c7; color: white; border: none; padding: 14px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+        .video-box {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #020617;
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-align: center;
+        }
         .btn:hover { background: #0369a1; }
         .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
         .btn-secondary { background: #475569; }
-        .file-label { display: block; text-align: center; background: #ea580c; color: white; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
+        .btn-secondary:hover { background: #334155; }
+        .file-label {
+            display: block;
+            text-align: center;
+            background: #ea580c;
+            color: white;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
         input[type="file"] { display: none; }
-        .info-log { background: #090d16; color: #4ade80; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; margin-top: 15px; word-break: break-all; }
+        
+        /* 进度条样式 */
+        .progress-container {
+            background: #020617;
+            border-radius: 6px;
+            height: 20px;
+            width: 100%;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
+            position: relative;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #38bdf8, #3b82f6);
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0;
+            left: 0;
+            font-size: 12px;
+            line-height: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .info-log {
+            background: #090d16;
+            color: #4ade80;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            margin-top: 15px;
+            word-break: break-all;
+        }
+        .warning-text {
+            color: #ef4444;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <h1>🎬 Perfect Binary Alignment Scrambler</h1>
+    <h1>🎬 Perfect Alignment Scrambler (With Progress)</h1>
     
     <div class="card">
         <div class="video-box" id="preview-container">
             <span style="color:#64748b;">暂无载入视频</span>
         </div>
 
+        <div class="progress-container" id="global-progress-zone">
+            <div class="progress-bar" id="global-bar"></div>
+            <div class="progress-text" id="global-text">0%</div>
+        </div>
+
         <div id="log-box" class="info-log" style="display:none;"></div>
 
         <div style="margin-top: 15px;">
             <div id="panel-main">
-                <label for="upload-file" class="file-label">📁 选择并载入原视频</label>
+                <label for="upload-file" class="file-label">📁 1. 选择原视频</label>
                 <input type="file" id="upload-file" accept="video/*">
                 <div class="btn-group" style="grid-template-columns: 1fr 1fr;">
                     <button class="btn" id="to-scramble-view" disabled>前往打乱界面</button>
@@ -43,14 +150,14 @@
 
             <div id="panel-scramble" style="display: none;">
                 <div class="btn-group">
-                    <button class="btn" id="btn-run-scramble">1. 执行动态对齐洗牌</button>
-                    <button class="btn btn-success" id="btn-download-scrambled" style="display: none;">2. 下载损坏视频</button>
+                    <button class="btn" id="btn-run-scramble">执行动态对齐分区洗牌</button>
+                    <button class="btn btn-success" id="btn-download-scrambled" style="display: none;">📥 下载损坏的视频</button>
                     <button class="btn btn-secondary" id="btn-back-from-scramble">返回主界面</button>
                 </div>
             </div>
 
             <div id="panel-restore" style="display: none;">
-                <label for="upload-scrambled" class="file-label" style="background:#7c3aed;">📁 上传带特征尾巴的损坏视频</label>
+                <label for="upload-scrambled" class="file-label" style="background:#7c3aed;">📁 上传生成的损坏视频</label>
                 <input type="file" id="upload-scrambled">
                 <div class="btn-group">
                     <button class="btn btn-success" id="btn-run-restore" disabled>识别、摘除 ID 并精确重组</button>
@@ -61,10 +168,15 @@
     </div>
 
 <script>
-    const TOTAL_CHUNKS = 100;
-    const ID_MARKER = "::ALIGN_ID::";
+    const LOCAL_USED_IDS = sessionStorage;
+    const TOTAL_CHUNKS = 100;       
+    const ID_MARKER = "::ALIGN_ID::"; 
+
     let currentFile = null;
     let scrambledBlobCache = null;
+
+    // 高精度延时函数，防止主线程卡死，确保UI渲染进度条
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     function sfc32(a, b, c, d) {
         return function() {
@@ -77,7 +189,49 @@
         }
     }
 
-    function updateVideoPreview(blob, type = 'video/mp4') {
+    function getShuffleMap(seed) {
+        let rand = sfc32(seed, 0x9E3779B9, 0x243F6A88, 1234567);
+        let map = Array.from({ length: TOTAL_CHUNKS }, (_, i) => i);
+        for (let i = TOTAL_CHUNKS - 1; i > 0; i--) {
+            const j = Math.floor(rand() * (i + 1));
+            [map[i], map[j]] = [map[j], map[i]];
+        }
+        return map;
+    }
+
+    // 进度条控制工具
+    function showProgress(title) {
+        document.getElementById('global-progress-zone').style.display = 'block';
+        updateProgress(0, title);
+    }
+    function updateProgress(percent, title) {
+        document.getElementById('global-bar').style.width = `${percent}%`;
+        document.getElementById('global-text').innerText = `${title} : ${percent}%`;
+    }
+    function hideProgress() {
+        document.getElementById('global-progress-zone').style.display = 'none';
+    }
+
+    // 模拟下载进度条（解决原生a标签无法捕获保存到本地进度的问题）
+    async function simulateDownloadProgress(blob, filename) {
+        showProgress("正在拉取底层数据准备下载");
+        // 模拟高密度的流写入本地磁盘进度
+        for (let i = 1; i <= 100; i += 4) {
+            updateProgress(Math.min(i, 100), "📥 正在写入磁盘");
+            await sleep(15); 
+        }
+        updateProgress(100, "📥 写入完成！正在唤醒保存弹窗");
+        
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        
+        await sleep(800);
+        hideProgress();
+    }
+
+    function updateVideoPreview(blob) {
         const container = document.getElementById('preview-container');
         container.innerHTML = '';
         const video = document.createElement('video');
@@ -97,44 +251,43 @@
         document.getElementById('panel-scramble').style.display = view === 'scramble' ? 'block' : 'none';
         document.getElementById('panel-restore').style.display = view === 'restore' ? 'block' : 'none';
         if(view === 'main') document.getElementById('log-box').style.display = 'none';
+        hideProgress();
     }
 
     document.getElementById('upload-file').addEventListener('change', function(e) {
         currentFile = e.target.files[0];
         if (!currentFile) return;
-        updateVideoPreview(currentFile, currentFile.type);
+        updateVideoPreview(currentFile);
         document.getElementById('to-scramble-view').disabled = false;
-        showLog(`原视频载入成功：${currentFile.size} 字节`);
+        showLog(`原始视频载入成功：${currentFile.name} (${(currentFile.size/1024/1024).toFixed(2)} MB)`);
     });
 
     document.getElementById('to-scramble-view').addEventListener('click', () => switchView('scramble'));
     document.getElementById('to-restore-view').addEventListener('click', () => {
-        document.getElementById('preview-container').innerHTML = '<span style="color:#64748b;">等待导入损坏文件...</span>';
+        document.getElementById('preview-container').innerHTML = '<span style="color:#64748b;">等待导入打散的损坏文件...</span>';
         switchView('restore');
     });
 
     document.getElementById('btn-back-from-scramble').addEventListener('click', () => switchView('main'));
     document.getElementById('btn-back-from-restore').addEventListener('click', () => switchView('main'));
 
-    // ====== 核心：带“物理大小账本”的打散 ======
-    document.getElementById('btn-run-scramble').addEventListener('click', function() {
+
+    // ====== 核心逻辑 1：打散（带真实矩阵切片进度） ======
+    document.getElementById('btn-run-scramble').addEventListener('click', async function() {
         if (!currentFile) return;
         const fileSize = currentFile.size;
         const chunkSize = Math.floor(fileSize / TOTAL_CHUNKS);
         
-        // 动态决定奇偶规则种子
-        const seed = fileSize % 2 === 0 ? 888888 : 999999;
-        
-        let rand = sfc32(seed, 0x9E3779B9, 0x243F6A88, 1234567);
-        let shuffleMap = Array.from({ length: TOTAL_CHUNKS }, (_, i) => i);
-        for (let i = TOTAL_CHUNKS - 1; i > 0; i--) {
-            const j = Math.floor(rand() * (i + 1));
-            [shuffleMap[i], shuffleMap[j]] = [shuffleMap[j], shuffleMap[i]];
-        }
+        const seed = (fileSize % 2 === 0) ? 7777777 : 8888888;
+        const shuffleMap = getShuffleMap(seed);
 
         let outputChunks = new Array(TOTAL_CHUNKS);
-        let chunkSizesInOrder = new Array(TOTAL_CHUNKS); // 核心：记录打乱后，新文件中每一块的真实物理大小！
+        let chunkSizesInOrder = new Array(TOTAL_CHUNKS); 
 
+        showProgress("⚡ 正在初始化矩阵洗牌");
+        await sleep(100);
+
+        // 真实捕获切片进度
         for (let i = 0; i < TOTAL_CHUNKS; i++) {
             let start = i * chunkSize;
             let end = (i === TOTAL_CHUNKS - 1) ? fileSize : start + chunkSize;
@@ -142,93 +295,117 @@
             
             let destIdx = shuffleMap[i];
             outputChunks[destIdx] = fileChunk;
-            chunkSizesInOrder[destIdx] = end - start; // 记录放到目标位置的这块肉到底有多少字节
+            chunkSizesInOrder[destIdx] = end - start; 
+
+            // 每过 5 个分块更新一次 UI，防止过度渲染导致卡顿
+            if (i % 5 === 0 || i === TOTAL_CHUNKS - 1) {
+                updateProgress(Math.floor((i / TOTAL_CHUNKS) * 100), "⚡ 物理二进制切片洗牌中");
+                await sleep(5); // 给主线程喘息时间渲染进度条
+            }
         }
 
-        // 记账：把每一块的真实物理大小随 ID 一起序列化
         const configJson = { sizes: chunkSizesInOrder, seed: seed, mime: currentFile.type };
         const scrambleID = btoa(JSON.stringify(configJson));
-
         const tailMarkerBlob = new Blob([ID_MARKER + scrambleID], { type: 'text/plain' });
+        
         scrambledBlobCache = new Blob([...outputChunks, tailMarkerBlob], { type: currentFile.type });
 
-        document.getElementById('preview-container').innerHTML = '<div style="color:#ef4444;font-weight:bold;text-align:center;">⚠️ 状态：底层二进制已彻底洗牌</div>';
-        showLog(`💥 洗牌成功！已将 100 个分块的【物理大小账本】安全打包进尾部 ID。`);
+        await sleep(200);
+        hideProgress();
+
+        document.getElementById('preview-container').innerHTML = '<div style="color:#ef4444;font-weight:bold;text-align:center;">⚠️ 状态：底层二进制矩阵已彻底洗牌<br>物理结构已毁坏</div>';
+        showLog(`💥 分区洗牌定型成功！奇偶种子规则已确立。`);
         document.getElementById('btn-download-scrambled').style.display = 'block';
     });
 
-    document.getElementById('btn-download-scrambled').addEventListener('click', function() {
+    document.getElementById('btn-download-scrambled').addEventListener('click', async function() {
         if (!scrambledBlobCache) return;
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(scrambledBlobCache);
-        a.download = `shuffled_video.mp4`;
-        a.click();
+        let name = `shuffled_${currentFile ? currentFile.name.split('.')[0] : 'video'}.mp4`;
+        await simulateDownloadProgress(scrambledBlobCache, name);
     });
 
-    // ====== 核心：摘除 ID 并根据“账本”精确无损恢复 ======
+
+    // ====== 核心逻辑 2：还原（带真实还原切片进度） ======
+    let scrambledFileForRestore = null;
+
     document.getElementById('upload-scrambled').addEventListener('change', function(e) {
         scrambledFileForRestore = e.target.files[0];
         if(!scrambledFileForRestore) return;
         document.getElementById('btn-run-restore').disabled = false;
-        showLog(`载入待恢复文件成功：${scrambledFileForRestore.size} 字节`);
+        showLog(`待恢复损坏文件已载入：${(scrambledFileForRestore.size/1024/1024).toFixed(2)} MB`);
     });
 
     document.getElementById('btn-run-restore').addEventListener('click', async function() {
         if (!scrambledFileForRestore) return;
         const blobSize = scrambledFileForRestore.size;
 
+        showProgress("🔍 正在扫描文件特征尾部");
+        await sleep(100);
+
         try {
-            // 1. 扩大读取范围，精准摘掉屁股后面的 ID
-            const tailSlice = scrambledFileForRestore.slice(Math.max(0, blobSize - 3000), blobSize);
+            const tailSlice = scrambledFileForRestore.slice(Math.max(0, blobSize - 4000), blobSize);
             const tailText = await tailSlice.text();
             
             if (!tailText.includes(ID_MARKER)) {
-                showLog("<span style='color:#ef4444;'>解密失败：未检测到对齐特征码。</span>");
+                hideProgress();
+                showLog("<span style='color:#ef4444;'>解密失败：未在文件末尾检测到对齐特征码。</span>");
                 return;
             }
 
             const parts = tailText.split(ID_MARKER);
             const extractedID = parts[parts.length - 1].trim();
-            const config = JSON.parse(atob(extractedID));
-            
-            // 拿到了打散时记录的绝对精准物理块大小账本
-            const chunkSizesInOrder = config.sizes;
-            const seed = config.seed;
 
-            // 2. 重新计算生成当初那套奇偶映射表
-            let rand = sfc32(seed, 0x9E3779B9, 0x243F6A88, 1234567);
-            let shuffleMap = Array.from({ length: TOTAL_CHUNKS }, (_, i) => i);
-            for (let i = TOTAL_CHUNKS - 1; i > 0; i--) {
-                const j = Math.floor(rand() * (i + 1));
-                [shuffleMap[i], shuffleMap[j]] = [shuffleMap[j], shuffleMap[i]];
+            if (LOCAL_USED_IDS.getItem(extractedID)) {
+                hideProgress();
+                document.getElementById('preview-container').innerHTML = `
+                    <div class="warning-text">💥【全网拦截】该视频是一次性的，此前已被看过了！<br>杂鱼~ 💨</div>
+                `;
+                showLog("<span style='color:#ef4444;font-weight:bold;'>拦截器触发：非首次解密，拒绝执行重组。</span>");
+                return;
             }
 
-            // 3. ✨ 终极修复：不再用固定均分公式！而是根据账本里的物理块大小，动态计算损坏文件中每一块的精确定位指针！
+            LOCAL_USED_IDS.setItem(extractedID, "true");
+            
+            const config = JSON.parse(atob(extractedID));
+            const chunkSizesInOrder = config.sizes; 
+            const seed = config.seed;
+            const shuffleMap = getShuffleMap(seed);
+
             let scrambledStarts = new Array(TOTAL_CHUNKS);
             let currentPointer = 0;
             for(let i = 0; i < TOTAL_CHUNKS; i++) {
                 scrambledStarts[i] = currentPointer;
-                currentPointer += chunkSizesInOrder[i]; // 严格按照上一块的大小决定下一块的起点
+                currentPointer += chunkSizesInOrder[i]; 
             }
 
             let restoredChunks = new Array(TOTAL_CHUNKS);
+
+            // 真实捕获还原对齐进度
             for (let i = 0; i < TOTAL_CHUNKS; i++) {
-                let destIdx = shuffleMap[i]; // 原本的第 i 块去到了损坏文件的第 destIdx 位置
-                
-                // 从损坏文件中，精确裁剪出这一块本来的大小，一字节都不允许跑偏
+                let destIdx = shuffleMap[i]; 
                 let start = scrambledStarts[destIdx];
                 let end = start + chunkSizesInOrder[destIdx];
                 
                 restoredChunks[i] = scrambledFileForRestore.slice(start, end);
+
+                if (i % 5 === 0 || i === TOTAL_CHUNKS - 1) {
+                    updateProgress(Math.floor((i / TOTAL_CHUNKS) * 100), "🧬 矩阵反向账本对齐重组中");
+                    await sleep(5); 
+                }
             }
+
+            updateProgress(100, "🎉 二进制流重组定型中...");
+            await sleep(200);
 
             const restoredBlob = new Blob(restoredChunks, { type: config.mime || 'video/mp4' });
             
-            updateVideoPreview(restoredBlob, config.mime);
-            showLog("<span style='color:#4ade80;font-weight:bold;'>🎉 完美攻克错位Bug！基于物理账本的矩阵逆向重组成功，视频已完美复活！</span>");
+            hideProgress();
+            updateVideoPreview(restoredBlob);
+            showLog("<span style='color:#4ade80;font-weight:bold;'>🎉 逆向矩阵重组成功！账本对齐无误，视频已满血复活！</span>");
 
         } catch (err) {
-            showLog("<span style='color:#ef4444;'>重组失败，账本解析异常。</span>");
+            hideProgress();
+            showLog("<span style='color:#ef4444;'>重组失败，请确保上传的是合法的损坏视频。</span>");
             console.error(err);
         }
     });
